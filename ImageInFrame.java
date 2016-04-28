@@ -1,0 +1,892 @@
+import java.awt.*;
+import java.util.Arrays;
+import java.util.Random;
+import javax.imageio.ImageIO;
+import java.io.File;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+public class ImageInFrame {
+    public static void main(String[] args) throws IOException {
+        String path = "D:\\Documents\\MathsProject\\Code\\ProjectCode\\noth.jpg";
+        File file = new File(path);
+        BufferedImage image = ImageIO.read(file);
+        JLabel label = new JLabel(new ImageIcon(image));
+        JFrame f = new JFrame();
+
+        //File output = new File("order8.jpg");
+        //ImageIO.write(image, "jpg", output);
+
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.getContentPane().add(label);
+        f.pack();
+        f.setLocation(200,200);
+        f.setVisible(true);
+    }
+
+    /**
+     *Two methods for returning the height and width of the input image.
+     */
+    public static int getHeight(BufferedImage image){
+        return image.getHeight();
+    }
+
+    public static int getWidth(BufferedImage image){
+        return image.getWidth();
+    }
+
+    /**
+     * Method for innverting all the pixels colours in an image.
+     */
+    public static void invertImage(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                int rgb = image.getRGB(i, j);
+                Color colour = new Color(rgb, true);
+                colour = new Color(255 - colour.getRed(),
+                    255 - colour.getGreen(),
+                    255 - colour.getBlue());
+                image.setRGB(i, j, colour.getRGB());
+            }
+        }
+    }
+
+    /**
+     * Method for converting a colour image to black and white.
+     */
+    public static void monoImage(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                int rgb = image.getRGB(i, j);
+                Color colour = new Color(rgb, true);
+                int greyLevel = (colour.getRed()+colour.getGreen()+colour.getBlue())/3;
+                colour = new Color(greyLevel,
+                    greyLevel,
+                    greyLevel);
+                image.setRGB(i, j, colour.getRGB());
+            }
+        }
+    }
+
+    /**
+     * The following three methods all apply ordered dithering
+     * to an image with different Matrices applied in each method.
+     */
+    public static void ordered(BufferedImage image){
+        int h = getHeight(image);
+        int w = getWidth(image);
+        int colour=0;
+
+        int[][] bayerOrder={{28,255,57},{142,113,227},{170,198,85}};
+
+        for (int i = 0; i < w-w%3; i+=3) {
+            for (int j = 0; j < h-h%3; j+=3) {
+
+                for (int k = 0; k < 3; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        int rgb = image.getRGB(k+i, l+j);
+                        Color col = new Color(rgb, true);
+                        int greyLevel = (col.getRed()+col.getGreen()+col.getBlue())/3; 
+                        int bayer = bayerOrder[k][l];
+                        if(greyLevel>=bayer){
+                            colour=255;
+                        }
+                        else{
+                            colour=0;
+                        }
+                        col = new Color(colour,colour,colour);
+                        image.setRGB(k+i, l+j, col.getRGB());
+                    }
+                }
+            }
+        }
+    }
+
+    public static void ordered2(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int colour=0;
+
+        int[][] bayerOrder={{15,135,45,165},{195,75,225,105},
+                {60,180,30,150},{240,120,210,90}};
+
+        for (int x = 0; x < width-width%4; x+=4) {
+            for (int y = 0; y < height-height%4; y+=4) {
+
+                for (int i = 0; i < 4; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        int rgba = image.getRGB(x+i, y+j);
+                        Color col = new Color(rgba, true);
+                        int greyLevel = (col.getRed()+col.getGreen()+
+                                col.getBlue())/3; 
+                        int bayer = bayerOrder[i][j];
+                        if(greyLevel>=bayer){
+                            colour=255;
+                        }
+                        else{
+                            colour=0;
+                        }
+                        col = new Color(colour,colour,colour);
+                        image.setRGB(x+i, y+j, col.getRGB());
+                    }
+                }
+            }
+        }
+    }
+
+    public static void ordered8(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int colour=0;
+
+        int[][] bayerOrder={{ 0, 32, 8, 40, 2, 34, 10, 42},
+                {48, 16, 56, 24, 50, 18, 58, 26}, 
+                {12, 44, 4, 36, 14, 46, 6, 38},
+                {60, 28, 52, 20, 62, 30, 54, 22}, 
+                { 3, 35, 11, 43, 1, 33, 9, 41}, 
+                {51, 19, 59, 27, 49, 17, 57, 25},
+                {15, 47, 7, 39, 13, 45, 5, 37},
+                {63, 31, 55, 23, 61, 29, 53, 21} }; 
+
+        for(int a=0; a<8; a++){
+            for(int b=0; b<8; b++){
+                bayerOrder[a][b]= (((bayerOrder[a][b])*255)/64);
+            }
+        }
+
+        for (int x = 0; x < width-width%8; x+=8) {
+            for (int y = 0; y < height-height%8; y+=8) {
+
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        int rgba = image.getRGB(x+i, y+j);
+                        Color col = new Color(rgba, true);
+                        int greyLevel = (col.getRed()+col.getGreen()+
+                                col.getBlue())/3; 
+                        int bayer = bayerOrder[i][j];
+                        if(greyLevel>=bayer){
+                            colour=255;
+                        }
+                        else{
+                            colour=0;
+                        }
+                        col = new Color(colour,colour,colour);
+                        image.setRGB(x+i, y+j, col.getRGB());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The following four methods all applying random dithering
+     * to an image with varying possible colour levels.
+     */
+    public static void halfTone(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int half=255;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int greyLevel = (col.getRed()+col.getGreen()+
+                        col.getBlue())/3;
+                Random random =new Random();
+                int prob = random.nextInt(256)+1;
+                if(greyLevel<prob){
+                    half=0;
+                }
+                else{
+                    half=255;
+                }
+                col = new Color(half,half,half);
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }
+
+    public static void triTone(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int half=255;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int greyLevel = (col.getRed()+col.getGreen()+
+                        col.getBlue())/3;
+                Random random =new Random();
+                int prob1 = random.nextInt(256)+1;
+                int prob2 = random.nextInt(256)+1;
+                int bound1 = Math.min(prob1,prob2);
+                int bound2= Math.max(prob1,prob2);
+                if(greyLevel<bound1){
+                    half=0;
+                }
+                else if(greyLevel>bound2){
+                    half=255;
+                }
+                else{
+                    half=123;
+                }
+
+                col = new Color(half,half,half);
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }
+
+    public static void quadTone(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int half=255;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int greyLevel = (col.getRed()+col.getGreen()+
+                        col.getBlue())/3;
+                Random random =new Random();
+                int prob1 = random.nextInt(256)+1;
+                int prob2 = random.nextInt(256)+1;
+                int prob3 = random.nextInt(256)+1;
+                int bound1 = Math.min(Math.min(prob1,prob2),prob3);
+                int bound2= Math.max(Math.max(prob1,prob2),prob3);
+                int bound3= prob1+prob2+prob3-bound1-bound2;
+                if(greyLevel<bound1){
+                    half=0;
+                }
+                else if(greyLevel>bound2){
+                    half=255;
+                }
+                else if(greyLevel<bound3){
+                    half=82;
+                }
+                else{
+                    half=163;
+                }
+
+                col = new Color(half,half,half);
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }
+
+    public static void sexTone(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int half=255;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int greyLevel = (col.getRed()+col.getGreen()+
+                        col.getBlue())/3;
+                Random random =new Random();
+                int[] probs = new int[5];
+                probs[0] = random.nextInt(256)+1;
+                probs[1] = random.nextInt(256)+1;
+                probs[2] = random.nextInt(256)+1;
+                probs[3] = random.nextInt(256)+1;
+                probs[4] = random.nextInt(256)+1;
+                Arrays.sort(probs);
+                int bound1= probs[0];
+                int bound2= probs[1];
+                int bound3= probs[2];
+                int bound4= probs[3];
+                int bound5= probs[4];
+                if(greyLevel<bound1){
+                    col= new Color(0,0,0);
+                }
+                else if(greyLevel<bound2){
+                    col= new Color(50,50,50);
+                }
+                else if(greyLevel<bound3){
+                    col= new Color(100,100,100);
+                }
+                else if(greyLevel<bound4){
+                    col= new Color(150,150,150);
+                }
+                else if(greyLevel<bound5){
+                    col= new Color(200,200,200);
+                }
+                else{
+                    col= new Color(255,255,255);
+                }
+
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }
+
+    /**
+     * Method for applying a grid to an image to represent
+     * the boundaries of each cube face.
+     */
+    public static void gridImage(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y+=6) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                col = new Color(0,0,0);
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+        for (int x = 0; x < width; x+=6) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                col = new Color(0,0,0);
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }
+
+    /**
+     * Method for simple conversion of an image to a Rubiks cube image.
+     * Uses least distance to a point formula and measures the distance
+     * from the following colours:     
+    White =(255,255,255), Red =(255,0,0), Blue=(0,0,255),
+    Green=(0,255,0), Orange=(255,128,0)
+    Yellow=(255,255,0)
+     */
+    public static void naiveRubiks(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int redC= col.getRed();
+                int greenC= col.getGreen();
+                int blueC= col.getBlue();
+                double[] cols = {0.00,0.00,0.00,0.00,0.00,0.00};
+                double min=10000000000000000000.00;
+                int colourtc=0;
+
+                cols[0] = Math.abs(redC-255) + 
+                Math.abs(greenC-255) + Math.abs(blueC-255);
+                cols[1] = Math.abs(redC-255) +
+                Math.abs(greenC-0) + Math.abs(blueC-0);
+                cols[2] = Math.abs(redC-0) + 
+                Math.abs(greenC-0) + Math.abs(blueC-255);
+                cols[3] = Math.abs(redC-60) +
+                Math.abs(greenC-160) + Math.abs(blueC-0);
+                cols[4] = Math.abs(redC-255) +
+                Math.abs(greenC-128) + Math.abs(blueC-0);
+                cols[5] = Math.abs(redC-220) +
+                Math.abs(greenC-220) + Math.abs(blueC-0);
+                //                cols[5] = Math.sqrt((redC-255)^2 + (greenC-255)^2 + (blueC-0)^2);
+                //System.out.println(Arrays.toString(cols));
+                //                 System.out.printf(" %d ",redC);
+                //                 System.out.printf(" %d ",greenC);
+                //                 System.out.printf(" %d ",blueC);
+                //                 System.out.println();
+                //System.out.printf("%d", height);
+                // System.out.printf("%d",width);
+
+                for(int i=0; i<6; i++){
+                    if(cols[i]<min){
+                        min=cols[i];
+                        colourtc=i;
+                    }
+                }
+
+                if(colourtc==0){
+                    col = new Color(255,255,255);
+                }
+                else if(colourtc==1){
+                    col = new Color(255,0,0);
+                }
+                else if(colourtc==2){
+                    col = new Color(0,0,255);
+                }
+                else if(colourtc==3){
+                    col = new Color(102,204,0);
+                }
+                else if(colourtc==4){
+                    col = new Color(255,128,0);
+                }
+                else if(colourtc==5){
+                    col = new Color(255,255,0);
+                }
+
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }
+
+    /**
+     * Simple attempt at applying error diffusion,
+     * method is not ideal but is used as a basis
+     * for the next methods.
+     */
+    public static void errorDiffusion(BufferedImage image){
+        BufferedImage input = image;
+        int width=getWidth(image);
+        int height=getHeight(image);
+        for(int i=1; i<height-1; i++){
+            for(int j=1; j<width-1; j++){
+                int rgba = input.getRGB(i, j);
+                Color col = new Color(rgba, true);
+                int greyLevel = (col.getRed()+col.getGreen()+
+                        col.getBlue())/3;
+                if(greyLevel<128){
+                    col = new Color(0,0,0);
+                }
+                else{
+                    col = new Color(255,255,255);
+                }
+                image.setRGB(i,j,col.getRGB());
+
+                int rgba1 = image.getRGB(i, j);
+                Color col1 = new Color(rgba1, true);
+                int err = greyLevel-((col1.getRed()+col1.getGreen()+
+                            col1.getBlue())/3);
+
+                //input[i][j+1] +=err*7/16;
+                rgba=input.getRGB(i,j+1);
+                col= new Color(rgba,true);
+                int red = (col.getRed()+err*7/48)%255;
+                int green= (col.getGreen()+err*7/48)%255;
+                int blue = (col.getBlue()+err*7/48)%255;
+                col = new Color(red,green,blue);
+                input.setRGB(i,j+1,col.getRGB());
+
+                //input[i+1][j-1] +=err*3/16;
+                rgba=input.getRGB(i+1,j-1);
+                col= new Color(rgba,true);
+                red = 255-(col.getRed()+err*3/48)%255;
+                green= 255-(col.getGreen()+err*3/48)%255;
+                blue = 255-(col.getBlue()+err*3/48)%255;
+                col = new Color(red,green,blue);
+                input.setRGB(i+1,j-1,col.getRGB());
+
+                //input[i+1][j] +=err*5/16;
+                rgba=input.getRGB(i+1,j);
+                col= new Color(rgba,true);
+                red = 255-(col.getRed()+err*5/48)%255;
+                green= 255-(col.getGreen()+err*5/48)%255;
+                blue = 255-(col.getBlue()+err*5/48)%255;
+                col = new Color(red,green,blue);
+                input.setRGB(i+1,j,col.getRGB());
+
+                //input[i+1][j+1] +=err*1/16;
+                rgba=input.getRGB(i+1,j+1);
+                col= new Color(rgba,true);
+                red = 255-(col.getRed()+err*1/48)%255;
+                green= 255-(col.getGreen()+err*1/48)%255;
+                blue = 255-(col.getBlue()+err*1/48)%255;
+                col = new Color(red,green,blue);
+                input.setRGB(i+1,j+1,col.getRGB());
+            }
+        }
+    }
+
+    /**
+     * Method for reducing the number of pixels in an image,
+     * groups of 6 36 pixels are combined to give an 
+     * average colour and the output image can then be
+     * formed of Rubiks Cubes.
+     */
+    public static void groupedImage(BufferedImage image){
+        int height = getHeight(image);
+        int width =getWidth(image);
+        double red=0;
+        double blue=0;
+        double green=0;
+        int red1=0;
+        int blue3=0;
+        int green2=0;
+        for (int x = 0; x < width; x+=6) {
+            for (int y = 0; y < height; y+=6) {
+
+                for(int i=x; i<x+6; i++){
+                    for(int j=y; j<y+6; j++){
+                        int rgba = image.getRGB(i, j);
+                        Color col = new Color(rgba, true);
+                        red+=col.getRed();
+                        blue+=col.getBlue();
+                        green+=col.getGreen();
+                    }
+                }
+                red1=(int)(red/36.0);
+                green2=(int)(green/36.0);
+                blue3=(int)(blue/36.0);
+
+                for(int k=x; k<x+6; k++){
+                    for(int l=y; l<y+6; l++){
+                        int rgba =image.getRGB(k,l);
+                        Color col =new Color(rgba,true);
+                        col = new Color(red1,
+                            green2,
+                            blue3);
+                        image.setRGB(k, l, col.getRGB());
+                    }
+                }
+                red=0;
+                blue=0;
+                green=0;
+            }
+        }
+    }
+
+    /**
+     * Attempt at a method for combining error diffusion,
+     * with a group of pixels like the method above.
+     * Would theoretically result in an error diffused
+     * image with less pixels.
+     */
+    private static void iteration(BufferedImage img){
+        int w = img.getWidth();
+        int h= img.getHeight();
+        int pix = w*h;
+        int cols[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        int it=0;
+        int red=0;
+        int blue=0;
+        int green=0;
+        for(int n=0; n<6; n++){
+            for(int a=0; a<w; a++){
+                for(int b=0; b<h; b++){
+                    int rgba = img.getRGB(a, b);
+                    Color col = new Color(rgba, true);
+                    red+=col.getRed();
+                    blue+=col.getBlue();
+                    green+=col.getGreen();
+                }
+            }
+            int red1=red/pix;
+            int green1=green/pix;
+            int blue1=blue/pix;
+            cols[n*3]=red1;
+            cols[n*3+1]=green1;
+            cols[n*3+2]=blue1;
+        }
+        C3[] palette = new C3[]{
+                new C3(cols[0],cols[1],cols[2]),
+                new C3(cols[3],cols[4],cols[5]),
+                new C3(cols[6],cols[7],cols[8]),
+                new C3(cols[9],cols[10],cols[11]),
+                new C3(cols[12],cols[13],cols[14]),
+                new C3(cols[15],cols[16],cols[17])            
+            };
+        C3[][] d = new C3[h][w];
+
+        for (int y = 0; y < h; y++) 
+            for (int x = 0; x < w; x++) 
+                d[y][x] = new C3(img.getRGB(x, y));
+
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+
+                C3 oldColor = d[y][x];
+                C3 newColor = findClosestPaletteColor(oldColor, palette);
+                img.setRGB(x, y, newColor.toColour().getRGB());
+
+                C3 err = oldColor.sub(newColor);
+
+                if (x+1 < w){
+                    d[y  ][x+1] = d[y  ][x+1].add(err.mul(7./16));
+                }
+                if (x-1>=0 && y+1<h){
+                    d[y+1][x-1] = d[y+1][x-1].add(err.mul(3./16));
+                }
+                if (y+1 < h){
+                    d[y+1][x  ] = d[y+1][x  ].add(err.mul(5./16));
+                }
+                if (x+1<w && y+1<h){
+                    d[y+1][x+1] = d[y+1][x+1].add(err.mul(1./16));
+                }
+            }
+        }   
+    }
+
+    private static void serpFloydSteinbergDithering(BufferedImage img) {
+        C3[] palette = new C3[] {
+                new C3(  0,   0,   0),
+                //new C3(  0,   0, 255),
+                //new C3(  0, 255,   0),
+                //new C3(255,   0,   0),
+                //new C3(255,   128, 0),
+                //new C3(255, 255,   0),
+                new C3(255, 255, 255)
+            };
+
+        int w = img.getWidth();
+        int h = img.getHeight();
+        int direction=0;
+
+        C3[][] d = new C3[h][w];
+
+        for (int y = 0; y < h; y++) 
+            for (int x = 0; x < w; x++) 
+                d[y][x] = new C3(img.getRGB(x, y));
+
+        for (int y = 0; y < img.getHeight(); y++) {
+            if((direction%2)==0){
+                for (int x = 0; x < img.getWidth(); x++) {
+
+                    C3 oldColor = d[y][x];
+                    C3 newColor = findClosestPaletteColor(oldColor, palette);
+                    img.setRGB(x, y, newColor.toColour().getRGB());
+
+                    C3 err = oldColor.sub(newColor);
+
+                    if (x+1 < w){ 
+                        d[y  ][x+1] = d[y  ][x+1].add(err.mul(7./16));
+                    }
+                    if (x-1>=0 && y+1<h){ 
+                        d[y+1][x-1] = d[y+1][x-1].add(err.mul(3./16));
+                    }
+                    if (y+1 < h){
+                        d[y+1][x  ] = d[y+1][x  ].add(err.mul(5./16));
+                    }
+                    if (x+1<w && y+1<h){
+                        d[y+1][x+1] = d[y+1][x+1].add(err.mul(1./16));
+                    }
+                    direction++;
+                }
+            }
+            else{
+                for (int x = img.getWidth()-1; x >=0; x--) {
+
+                    C3 oldColor = d[y][x];
+                    C3 newColor = findClosestPaletteColor(oldColor, palette);
+                    img.setRGB(x, y, newColor.toColour().getRGB());
+
+                    C3 err = oldColor.sub(newColor);
+
+                    if (x-1>=0){
+                        d[y  ][x-1] = d[y  ][x-1].add(err.mul(7./16));}
+                    if (x-1>=0 && y+1<h){
+                        d[y+1][x-1] = d[y+1][x-1].add(err.mul(1./16));}
+                    if (y+1 < h){
+                        d[y+1][x  ] = d[y+1][x  ].add(err.mul(5./16));}
+                    if (x+1<w && y+1<h){
+                        d[y+1][x+1] = d[y+1][x+1].add(err.mul(3./16));}
+                    direction++;
+                }
+            }
+        }   
+    }
+
+    private static void floydSteinbergDithering(BufferedImage img) {
+        C3[] palette = new C3[] {
+                new C3(  0,   0,   0),
+                //new C3(  0,   0, 255),
+                // new C3(  0, 255,   0),
+
+                //new C3(255,   0,   0),
+                //new C3(255,   128, 0),
+                //new C3(255, 255,   0),
+                new C3(255, 255, 255)
+            };
+
+        int w = img.getWidth();
+        int h = img.getHeight();
+
+        C3[][] d = new C3[h][w];
+
+        for (int y = 0; y < h; y++) 
+            for (int x = 0; x < w; x++) 
+                d[y][x] = new C3(img.getRGB(x, y));
+
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+
+                C3 oldColor = d[y][x];
+                C3 newColor = findClosestPaletteColor(oldColor, palette);
+                img.setRGB(x, y, newColor.toColour().getRGB());
+
+                C3 err = oldColor.sub(newColor);
+
+                if (x+1 < w){
+                    d[y  ][x+1] = d[y  ][x+1].add(err.mul(7./16));}
+                if (x-1>=0 && y+1<h){
+                    d[y+1][x-1] = d[y+1][x-1].add(err.mul(3./16));}
+                if (y+1 < h)   {
+                    d[y+1][x  ] = d[y+1][x  ].add(err.mul(5./16));}
+                if (x+1<w && y+1<h){
+                    d[y+1][x+1] = d[y+1][x+1].add(err.mul(1./16));}
+            }
+        }   
+    }
+
+    private static void burkeDithering(BufferedImage img) {
+
+        C3[] palette = new C3[] {
+                //new C3(  0,   0,   0),
+                new C3(  0,   0, 255),
+                new C3(  0, 255,   0),
+                //new C3(  0, 255, 255),
+                new C3(255,   0,   0),
+                new C3(255,   128, 0),
+                new C3(255, 255,   0),
+                new C3(255, 255, 255)
+            };
+
+        int w = img.getWidth();
+        int h = img.getHeight();
+
+        C3[][] d = new C3[h][w];
+
+        for (int y = 0; y < h; y++) 
+            for (int x = 0; x < w; x++) 
+                d[y][x] = new C3(img.getRGB(x, y));
+
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+
+                C3 oldColor = d[y][x];
+                C3 newColor = findClosestPaletteColor(oldColor, palette);
+                img.setRGB(x, y, newColor.toColour().getRGB());
+
+                C3 err = oldColor.sub(newColor);
+
+                if (x+1 < w) {
+                    d[y  ][x+1] = d[y  ][x+1].add(err.mul(8./32));}
+                if (x+2 < w) {
+                    d[y  ][x+2] = d[y  ][x+2].add(err.mul(4./32));}
+                if (x-1>=0 && y+1<h){
+                    d[y+1][x-1] = d[y+1][x-1].add(err.mul(4./32));}
+                if (x-2>=0 && y+1<h){
+                    d[y+1][x-2] = d[y+1][x-2].add(err.mul(2./32));}
+                if (y+1 < h) {
+                    d[y+1][x  ] = d[y+1][x  ].add(err.mul(8./32));}
+                if (x+1<w && y+1<h){
+                    d[y+1][x+1] = d[y+1][x+1].add(err.mul(4./32));}
+                if (x+2<w && y+1<h){
+                    d[y+1][x+2] = d[y+1][x+2].add(err.mul(2./32));}
+            }
+        }   
+    }
+
+    private static void stuckiDithering(BufferedImage img) {
+
+        C3[] palette = new C3[] {
+                //new C3(  0,   0,   0),
+                new C3(  0,   0, 255),
+                new C3(  0, 255,   0),
+                //new C3(  0, 255, 255),
+                new C3(255,   0,   0),
+                new C3(255,   128, 0),
+                new C3(255, 255,   0),
+                new C3(255, 255, 255)
+            };
+
+        int w = img.getWidth();
+        int h = img.getHeight();
+
+        C3[][] d = new C3[h][w];
+
+        for (int y = 0; y < h; y++) 
+            for (int x = 0; x < w; x++) 
+                d[y][x] = new C3(img.getRGB(x, y));
+
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+
+                C3 oldColor = d[y][x];
+                C3 newColor = findClosestPaletteColor(oldColor, palette);
+                img.setRGB(x, y, newColor.toColour().getRGB());
+
+                C3 err = oldColor.sub(newColor);
+
+                if (x+1 < w) {
+                    d[y  ][x+1] = d[y  ][x+1].add(err.mul(8./42));}
+                if (x+2 < w) {
+                    d[y  ][x+2] = d[y  ][x+2].add(err.mul(4./42));}
+                if (x-1>=0 && y+1<h){
+                    d[y+1][x-1] = d[y+1][x-1].add(err.mul(4./42));}
+                if (x-2>=0 && y+1<h){
+                    d[y+1][x-2] = d[y+1][x-2].add(err.mul(2./42));}
+                if (y+1 < h)  {
+                    d[y+1][x  ] = d[y+1][x  ].add(err.mul(8./42));}
+                if (x+1<w && y+1<h){
+                    d[y+1][x+1] = d[y+1][x+1].add(err.mul(4./42));}
+                if (x+2<w && y+1<h){
+                    d[y+1][x+2] = d[y+1][x+2].add(err.mul(2./42));}
+                if (x-2>=0 && y+2<h){
+                    d[y+2][x-2] = d[y+2][x-2].add(err.mul(1./42));}
+                if (x-1>=0 && y+2<h){
+                    d[y+2][x-1] = d[y+2][x-1].add(err.mul(2./42));}
+                if (y+2 < h){
+                    d[y+2][x] = d[y+2][x].add(err.mul(4./42));}
+                if (x+1<w && y+2<h){
+                    d[y+2][x+1] = d[y+2][x+1].add(err.mul(2./42));}
+                if (x+2<w && y+2<h) {
+                    d[y+2][x+2] = d[y+2][x+2].add(err.mul(1./42));}
+            }
+        }   
+    }
+
+    private static C3 findClosestPaletteColor(C3 c, C3[] palette) {
+        C3 closest = palette[0];
+
+        for (C3 n : palette) 
+            if (n.diff(c) < closest.diff(c))
+                closest = n;
+
+        return closest;
+    }
+    static class C3 {
+        int red, green, blue;
+
+        //initalise C3 with defined colours
+        public C3(int red, int green, int blue) {
+            this.red = red;
+            this.green = green;
+            this.blue = blue;
+        }
+
+        //initialise C3 from a colour
+        public C3(int c) {
+            Color colour = new Color(c);
+            this.red = colour.getRed();
+            this.green = colour.getGreen();
+            this.blue = colour.getBlue();
+        }
+
+        public double diff(C3 n) {
+            return Math.abs(red - n.red) +  Math.abs(green - n.green) +  Math.abs(blue - n.blue);
+        }
+
+        public C3 mul(double m) {
+            return new C3((int) (m * red), (int) (m * green), (int) (m * blue));
+        }
+
+        public C3 sub(C3 n) {
+            return new C3(red - n.red, green - n.green, blue - n.blue);
+        }
+
+        public C3 add(C3 n) {
+            return new C3(red + n.red, green + n.green, blue + n.blue);
+        }
+
+        public int clamp(int clamp) {
+            return Math.max(0, Math.min(255, clamp));
+        }
+
+        public Color toColour() {
+            return new Color(clamp(red), clamp(green), clamp(blue));
+        }
+
+        public int toRGB() {
+            return toColour().getRGB();
+        }
+
+    }
+}
