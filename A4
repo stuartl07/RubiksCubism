@@ -1,6 +1,6 @@
   /**
      * Method for applying a grid to an image to represent
-     * the boundaries of each cube face.
+     * the boundaries of each cube face. 
      */
     public static void gridImage(BufferedImage image){
         int height = getHeight(image);
