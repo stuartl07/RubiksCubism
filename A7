@@ -1,6 +1,6 @@
  /**
      * The following three methods all apply ordered dithering
-     * to an image with different Matrices applied in each method.
+     * to an image with different Matrices applied in each method. 
      */
     public static void ordered(BufferedImage image){
         int h = getHeight(image);
