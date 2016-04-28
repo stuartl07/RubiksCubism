@@ -2,7 +2,7 @@ public class Superpixel {
     // initialise the arrays for storing the values 
     double[] distances; 
     int[] blues;
-    int[] reds; 
+    int[] reds;  
     int[] greens; 
     int[] labels;  
          
