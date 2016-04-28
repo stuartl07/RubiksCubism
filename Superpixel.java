@@ -1,0 +1,181 @@
+public class Superpixel { 
+    // initialise the arrays for storing the values 
+    double[] distances; 
+    int[] blues;
+    int[] reds; 
+    int[] greens; 
+    int[] labels;  
+         
+
+    Cluster[] clusters; 
+
+    //max number of loops in case of fault 
+    int maxLoops = 50; 
+
+    public static void main(String[] args) throws IOException{ 
+        double S = 70;
+        double m = 150;
+	Superpixel sp = new Superpixel(); 	
+        String path = "D:\\Documents\\MathsProject\\Code\\ProjectCode\\noth.jpg";
+        File file = new File(path);
+        BufferedImage img = ImageIO.read(file); 
+        BufferedImage outputImage = sp.calculate(img,S,m); 
+        JLabel label = new JLabel(new ImageIcon(outputImage));
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.getContentPane().add(label);
+        frame.pack();
+        frame.setLocation(200,200);
+        frame.setVisible(true);
+        File outputfile = new File("super2.png");
+        ImageIO.write(dstImage, "png", outputfile);
+    } 
+
+    public Superpixel() {
+    } 
+
+    public BufferedImage calculate(BufferedImage img,  
+    double S, double m) { 
+        int width = img.getWidth(); 
+        int height = img.getHeight(); 
+        BufferedImage result = new BufferedImage(width, height,  
+                BufferedImage.TYPE_INT_RGB); 
+        long start = System.currentTimeMillis(); 
+
+        // create an array of the images pixels 
+        int[] pixels = img.getRGB(0, 0, width, height, null, 0, width); 
+
+        // Creates a lookup table and fills it
+        distances = new double[width*height]; 
+        Arrays.fill(distances, Integer.MAX_VALUE); 
+        labels = new int[width*height]; 
+        Arrays.fill(labels, -1); 
+        // RGB values are split into their own separate array 
+        reds = new int[width*height]; 
+        greens = new int[width*height]; 
+        blues = new int[width*height]; 
+        for (int y=0;y<height;y++) { 
+            for (int x=0;x<width;x++) { 
+                int position = x+y*width; 
+                int color = pixels[position]; 
+                reds[position]   = color>>16&0x000000FF;  
+                greens[position] = color>> 8&0x000000FF;  
+                blues[position]  = color>> 0&0x000000FF;  
+            } 
+        } 
+
+        // calls the create clusters method 
+        createClusters(img, S, m); 
+        // While clusters are unstable keep looping until max is reached 
+        int loops = 0; 
+        boolean pixelsChanged = true; 
+        while (pixelsChanged&&loops<maxLoops) { 
+            pixelsChanged = false; 
+            loops++; 
+            // method for a cluster which has centre c 
+            for (int k=0;k<clusters.length;k++) { 
+                Cluster c = clusters[k]; 
+                // Each pixel is looped through within a 2S 
+                // area around c
+                int xe = Math.min((int)(c.average_x+S),width); 
+                int ye = Math.min((int)(c.average_y+S),height);
+                int xs = Math.max((int)(c.average_x-S),0); 
+                int ys = Math.max((int)(c.average_y-S),0); 
+                                for (int y=ys;y<ye;y++) { 
+                    for (int x=xs;x<xe;x++) { 
+                        int position = x+width*y; 
+                        double D = c.distance(x, y, reds[position],  
+                                greens[position],  
+                                blues[position],  
+                                S, m, width, height); 
+                        if ((D<distances[position])&&(labels[position]!=c.id)) { 
+                            distances[position]         = D; 
+                            labels[position]            = c.id; 
+                            pixelsChanged = true; 
+                        } 
+                    }  
+                } 
+            } 
+            // restarts the clusters looping
+            for (int ind=0;ind<clusters.length;ind++) { 
+                clusters[ind].reset(); 
+            } 
+            // all pixels added to a cluster based on label
+            for (int y=0;y<height;y++) { 
+                for (int x=0;x<width;x++) { 
+                    int position = x+y*width; 
+                    clusters[labels[position]].addPixel(x, y,  
+                        reds[position], greens[position], blues[position]); 
+                } 
+            } 
+
+            // cluster centres calculated 
+            for (int ind=0;ind<clusters.length;ind++) { 
+                clusters[ind].calculateCenter(); 
+            } 
+        } 
+
+        // Output the image with lines addes  
+        for (int i=1;i<height-1;i++) { 
+            for (int j=1;j<width-1;j++) { 
+                int aa = labels[i+j*width]; 
+                int ab = labels[(i+1)+j*width]; 
+                int ac = labels[i+(j+1)*width]; 
+                if (aa!=ab||aa!=ac) { 
+                    result.setRGB(i, j, 0x000000); 
+                } else { 
+                    result.setRGB(i, j, img.getRGB(i, j)); 
+                } 
+            } 
+        } 
+
+        // put red pixel at centre of superpixel  
+        for (int x=0;x<clusters.length;x++) { 
+            Cluster c = clusters[x]; 
+                  } 
+
+        long finish = System.currentTimeMillis();
+        //Prints out the info of the image process
+        System.out.println(clusters.length 
+            + " superpixels were created in "+loops 
+            +" different loops and achieved in "+(finish-start)+" milliseconds."); 
+        return result; 
+    } 
+
+    /* 
+     * Method for initial creation of clusters 
+     */ 
+    public void createClusters(BufferedImage img,  
+    double S, double m) { 
+        Vector<Cluster> temperature = new Vector<Cluster>(); 
+	int h = img.getHeight();
+        int w = img.getWidth();
+        int id = 0;  
+        double xorigin = 0;
+        boolean ev = false; 
+
+        for (double y=S/2;y<h;y+=S) { 
+	     //Hexagon grid is created by alternating x-position
+         
+            if (ev) { 
+                xorigin = S/2.0; 
+                ev = false; 
+            } else { 
+                xorigin = S; 
+                ev = true; 
+            } 
+            for (double x=xorigin;x<w;x+=S) { 
+                int pos = (int)(x+y*w); 
+                Cluster c = new Cluster(id,  
+                        reds[pos], greens[pos], blues[pos],  
+                        (int)x, (int)y, S, m); 
+                temperature.add(c); 
+                id++; 
+            } 
+        } 
+        clusters = new Cluster[temperature.size()]; 
+        for (int i=0;i<temperature.size();i++) { 
+            clusters[i] = temperature.elementAt(i); 
+        } 
+    } 
+} 

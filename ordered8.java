@@ -1,0 +1,43 @@
+public static void ordered8(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int colour=0;
+
+        int[][] bayerOrder={{ 0, 32, 8, 40, 2, 34, 10, 42},
+                {48, 16, 56, 24, 50, 18, 58, 26}, 
+                {12, 44, 4, 36, 14, 46, 6, 38},
+                {60, 28, 52, 20, 62, 30, 54, 22}, 
+                { 3, 35, 11, 43, 1, 33, 9, 41}, 
+                {51, 19, 59, 27, 49, 17, 57, 25},
+                {15, 47, 7, 39, 13, 45, 5, 37},
+                {63, 31, 55, 23, 61, 29, 53, 21} }; 
+
+        for(int a=0; a<8; a++){
+            for(int b=0; b<8; b++){
+                bayerOrder[a][b]= (((bayerOrder[a][b])*255)/64);
+            }
+        }
+
+        for (int x = 0; x < width-width%8; x+=8) {
+            for (int y = 0; y < height-height%8; y+=8) {
+
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        int rgba = image.getRGB(x+i, y+j);
+                        Color col = new Color(rgba, true);
+                        int greyLevel = (col.getRed()+col.getGreen()+
+                                col.getBlue())/3; 
+                        int bayer = bayerOrder[i][j];
+                        if(greyLevel>=bayer){
+                            colour=255;
+                        }
+                        else{
+                            colour=0;
+                        }
+                        col = new Color(colour,colour,colour);
+                        image.setRGB(x+i, y+j, col.getRGB());
+                    }
+                }
+            }
+        }
+    }

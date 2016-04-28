@@ -1,0 +1,47 @@
+public static void sexTone(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        int half=255;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int rgba = image.getRGB(x, y);
+                Color col = new Color(rgba, true);
+                int greyLevel = (col.getRed()+col.getGreen()+
+                        col.getBlue())/3;
+                Random random =new Random();
+                int[] probs = new int[5];
+                probs[0] = random.nextInt(256)+1;
+                probs[1] = random.nextInt(256)+1;
+                probs[2] = random.nextInt(256)+1;
+                probs[3] = random.nextInt(256)+1;
+                probs[4] = random.nextInt(256)+1;
+                Arrays.sort(probs);
+                int bound1= probs[0];
+                int bound2= probs[1];
+                int bound3= probs[2];
+                int bound4= probs[3];
+                int bound5= probs[4];
+                if(greyLevel<bound1){
+                    col= new Color(0,0,0);
+                }
+                else if(greyLevel<bound2){
+                    col= new Color(50,50,50);
+                }
+                else if(greyLevel<bound3){
+                    col= new Color(100,100,100);
+                }
+                else if(greyLevel<bound4){
+                    col= new Color(150,150,150);
+                }
+                else if(greyLevel<bound5){
+                    col= new Color(200,200,200);
+                }
+                else{
+                    col= new Color(255,255,255);
+                }
+
+                image.setRGB(x, y, col.getRGB());
+            }
+        }
+    }

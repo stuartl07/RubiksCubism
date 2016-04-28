@@ -1,0 +1,33 @@
+ /**
+     * The following three methods all apply ordered dithering
+     * to an image with different Matrices applied in each method.
+     */
+    public static void ordered(BufferedImage image){
+        int h = getHeight(image);
+        int w = getWidth(image);
+        int colour=0;
+
+        int[][] bayerOrder={{28,255,57},{142,113,227},{170,198,85}};
+
+        for (int i = 0; i < w-w%3; i+=3) {
+            for (int j = 0; j < h-h%3; j+=3) {
+
+                for (int k = 0; k < 3; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        int rgb = image.getRGB(k+i, l+j);
+                        Color col = new Color(rgb, true);
+                        int greyLevel = (col.getRed()+col.getGreen()+col.getBlue())/3; 
+                        int bayer = bayerOrder[k][l];
+                        if(greyLevel>=bayer){
+                            colour=255;
+                        }
+                        else{
+                            colour=0;
+                        }
+                        col = new Color(colour,colour,colour);
+                        image.setRGB(k+i, l+j, col.getRGB());
+                    }
+                }
+            }
+        }
+    }
