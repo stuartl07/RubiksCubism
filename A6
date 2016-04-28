@@ -1,7 +1,7 @@
 public static void sexTone(BufferedImage image){
         int height = getHeight(image);
         int width = getWidth(image);
-        int half=255;
+        int half=255; 
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
