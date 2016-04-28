@@ -10,7 +10,7 @@ private static void stuckiDithering(BufferedImage img) {
                 new C3(255, 255,   0),
                 new C3(255, 255, 255)
             };
-
+ 
         int w = img.getWidth();
         int h = img.getHeight();
 
