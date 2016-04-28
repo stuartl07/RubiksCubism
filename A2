@@ -3,7 +3,7 @@
      * groups of 6 36 pixels are combined to give an 
      * average colour and the output image can then be
      * formed of Rubiks Cubes.
-     */
+     */ 
     public static void groupedImage(BufferedImage image){
         int height = getHeight(image);
         int width =getWidth(image);
