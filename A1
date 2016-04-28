@@ -1,0 +1,14 @@
+public static void invertImage(BufferedImage image){
+        int height = getHeight(image);
+        int width = getWidth(image);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                int rgb = image.getRGB(i, j);
+                Color colour = new Color(rgb, true);
+                colour = new Color(255 - colour.getRed(),
+                    255 - colour.getGreen(),
+                    255 - colour.getBlue());
+                image.setRGB(i, j, colour.getRGB());
+            }
+        }
+    }
