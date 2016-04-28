@@ -1,0 +1,16 @@
+public static void main(String[] args) throws IOException {
+        String path = "C:\\Users\\Stuart\\Documents\\MathsProject\\ProjectCode\\creation.jpg";
+        File file = new File(path);
+        BufferedImage image = ImageIO.read(file);
+        JLabel label = new JLabel(new ImageIcon(image));
+        JFrame f = new JFrame();
+        serpFloydSteinbergDithering(image);
+        File output = new File("adamed.png");
+        ImageIO.write(image, "png", output);
+
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.getContentPane().add(label);
+        f.pack();
+        f.setLocation(200,200);
+        f.setVisible(true);
+    }
