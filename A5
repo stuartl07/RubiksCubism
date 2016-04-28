@@ -1,4 +1,4 @@
-/**
+/** 
      * The following four methods all applying random dithering
      * to an image with varying possible colour levels.
      */
