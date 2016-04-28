@@ -1,7 +1,7 @@
 public static void ordered8(BufferedImage image){
         int height = getHeight(image);
         int width = getWidth(image);
-        int colour=0;
+        int colour=0; 
 
         int[][] bayerOrder={{ 0, 32, 8, 40, 2, 34, 10, 42},
                 {48, 16, 56, 24, 50, 18, 58, 26}, 
